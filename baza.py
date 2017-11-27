@@ -6,8 +6,7 @@ from Conn_Package.connection import conn
 
 class DBconn:
     def __init__(self):
-        #self.conn = pymysql.connect('Localhost','baza_sprzetowa', passwrd, db)
-        self.conn = pymysql.connect('localhost','root','W4rszt4T2017','baza_sprzetowa')
+        self.conn=conn
         self.cursor = self.conn.cursor()
         print('Połączenie ustanowione')
         while(True):
