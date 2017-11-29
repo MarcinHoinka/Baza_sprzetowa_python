@@ -1,12 +1,14 @@
 #-*- coding: utf-8 -*-
 import pymysql
+from Conn_Package.connection import conn
+
 # import modules
 # import getpass
 #from Conn_Package.password import passwrd, db
-from Conn_Package.connection import conn
 
 class DBconn:
     def __init__(self):
+        self.user_email=''
         self.conn=conn
         self.cursor = self.conn.cursor()
         print(        '_________ \n'+                    
@@ -86,20 +88,57 @@ class DBconn:
                 self.delete() 
                 self.conn.commit()
             elif(c.upper() == 'Q'):
-                print('Zrywamy połączenie')
+                print('Wylogowano')
                 self.conn.close()
                 break  
         
     def menu_user(self):
         self.cursor = self.conn.cursor()
         while(True):
-            c = input('Co chcesz zrobić: \n [R]rezerwacja \n [Z]zmień swoje dane \n [Q]wyjdz \n')
+            c = input('Co chcesz zrobić: \n [R]rezerwacja \n [Z]zmień swoje dane \n [H]zmien hasło \n [Q]wyjdz \n')
             if(c.upper() == 'R'):
                 self.rezerwacja()
             elif(c.upper() == 'Z'):
-                self.user_upadte()
+                self.user_update()
+            elif(c.upper() == 'H'):
+                self.passwd_change()
             elif(c.upper() == 'Q'):
-                print('Zrywamy połączenie')
+                print('Wylogowano')
                 self.conn.close()
                 break
+    
+    def user_update(self):
+        print(self.user_email+'<<< WTF')
+        # brak wartosci dla zmiennej user_email a co za tym idzie rezultatu w 116!!! 
+        self.cursor.execute('SELECT imie, nazwisko, ksywka, plec, data_ur, waga, email, telefon, uprawnienia FROM klubowicze WHERE email =\''+
+                            self.user_email+'\';')
+#         self.cursor.execute('SELECT * from klubowicze;')
+        results = self.cursor.fetchall()
+        print('wubba lubba dub dub')
+        print(results)
+        
+        
+#         self.cursor.execute('update user set imie=%s, nazwisko=%s, pozycja=%s where id=%s;', (imie,nazwisko,pozycja,id))
+#         
+#         self.cursor = self.conn.cursor()
+    
+    def passwd_change(self):
+        user_passwd = input('Podaj hasło: ')
+        self.cursor.execute('SELECT email from logowanie WHERE haslo =\''+user_passwd+'\';') 
+        # DODAĆ w selectie >>> user_email <<< jak zacznie działać
+        results = self.cursor.fetchall()
+        for row in results:
+            email = row[0]
+            print('email:'+email+'\n') 
+            passwd_new = input('Wpisz nowe hasło: ')
+            passwd_new2 = input('Wpisz nowe hasło ponownie: ')
+            if(passwd_new == passwd_new2):
+                self.cursor.execute('UPDATE logowanie SET haslo = \''+passwd_new+'\' WHERE email = \''+email+'\';')
+                self.conn.commit()
+                print('Hasło zmienione poprawnie.\n')
+            else:
+                print('Hasła nie są jednakowe! Wpisz dwa razy to samo hasło. \n')
+            break
+        
+    
 p1 = DBconn()
