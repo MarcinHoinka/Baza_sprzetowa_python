@@ -8,7 +8,7 @@ from Conn_Package.connection import conn
 
 class DBconn:
     def __init__(self):
-        self.user_email=''
+#         self.user_email=''
         self.conn=conn
         self.cursor = self.conn.cursor()
         print(        '_________ \n'+                    
@@ -57,7 +57,8 @@ class DBconn:
 #                 print(uprawnienia) - podglad uprawnien w zmiennej - DO SKASOWANIA NA KONIEC
                 if uprawnienia == '1':
                     print('Status: klubowicz')
-                    self.menu_user()
+                    l1 = Logowanie(user_email)
+                    l1.menu_user()
                 elif uprawnienia == '2':
                     print('Status: sprzetowiec')
                     self.menu_root()
@@ -67,7 +68,13 @@ class DBconn:
                 print('Niepoprawny email')
 #                 self.conn.close()
             break
-
+        
+class Logowanie:
+    def __init__(self,user_email):
+        self.user_email = user_email
+        self.conn=conn
+        #jak uruchomic odpowiednią metode zaleznie od uprawnień
+    
     def menu_root(self):
         self.cursor = self.conn.cursor()
 #         print('Połączenie ustanowione')
@@ -87,6 +94,8 @@ class DBconn:
             elif(c.upper() == 'D'):
                 self.delete() 
                 self.conn.commit()
+            elif(c.upper() == 'H'):
+                self.passwd_change()
             elif(c.upper() == 'Q'):
                 print('Wylogowano')
                 self.conn.close()
@@ -108,24 +117,26 @@ class DBconn:
                 break
     
     def user_update(self):
-        print(self.user_email+'<<< WTF')
+#         print(self.user_email)
         # brak wartosci dla zmiennej user_email a co za tym idzie rezultatu w 116!!! 
         self.cursor.execute('SELECT imie, nazwisko, ksywka, plec, data_ur, waga, email, telefon, uprawnienia FROM klubowicze WHERE email =\''+
                             self.user_email+'\';')
 #         self.cursor.execute('SELECT * from klubowicze;')
         results = self.cursor.fetchall()
-        print('wubba lubba dub dub')
         print(results)
         
         
 #         self.cursor.execute('update user set imie=%s, nazwisko=%s, pozycja=%s where id=%s;', (imie,nazwisko,pozycja,id))
 #         
 #         self.cursor = self.conn.cursor()
-    
+
+
+# passwd_change wciąż rozpoznaje tylko po hasle bez potwierdzenia maila! 
+
     def passwd_change(self):
         user_passwd = input('Podaj hasło: ')
         self.cursor.execute('SELECT email from logowanie WHERE haslo =\''+user_passwd+'\';') 
-        # DODAĆ w selectie >>> user_email <<< jak zacznie działać
+        # DODAĆ w select'ie >>> user_email <<< jak zacznie działać
         results = self.cursor.fetchall()
         for row in results:
             email = row[0]
