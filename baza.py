@@ -1,10 +1,7 @@
 #-*- coding: utf-8 -*-
 import pymysql
-from Conn_Package.connection import conn
-
-# import modules
 # import getpass
-#from Conn_Package.password import passwrd, db
+from Conn_Package.connection import conn
 
 class DBconn:
     def __init__(self):
@@ -117,26 +114,47 @@ class Logowanie:
                 break
     
     def user_update(self):
-#         print(self.user_email)
-        # brak wartosci dla zmiennej user_email a co za tym idzie rezultatu w 116!!! 
-        self.cursor.execute('SELECT imie, nazwisko, ksywka, plec, data_ur, waga, email, telefon, uprawnienia FROM klubowicze WHERE email =\''+
+        print(self.user_email)
+        self.cursor.execute('SELECT imie, nazwisko, ksywka, plec, data_ur, waga, email, telefon FROM klubowicze WHERE email =\''+
                             self.user_email+'\';')
-#         self.cursor.execute('SELECT * from klubowicze;')
         results = self.cursor.fetchall()
-        print(results)
+#         print(results)
+        for row in results:
+            imie = row[0]
+            nazwisko = row[1]
+            ksywa = row[2]
+            plec = row[3]
+            data_ur = row[4]
+            waga = [5]
+            email = row[6]
+            telefon = row[7]
+            print ('%-15s| %-20s| %-10s| %-5s| %-14s| %-5i| %-20s| %-10s|' % ('imie, nazwisko, ksywa, płeć, Data urodzenia, waga, email, telefon'))
+            print ('%-15s| %-20s| %-10s| %-5s| %-12s| %-3i| %-20s| %-10s|' % (imie, nazwisko, ksywa, plec, data_ur, waga, email, telefon))
+        
+#         ERROR!!!!!!
+#         File "C:\Users\Marcin\Documents\03_Kurs Reaktor PWN\Python\Py_database\baza.py", line 134, in user_update
+#     print ('%-15s| %-20s| %-10s| %-5s| %-14s| %-5i| %-20s| %-10s|' % ('imie, nazwisko, ksywa, płeć, Data_urodzenia, waga, email, telefon'))
+# TypeError: not enough arguments for format string
         
         
-#         self.cursor.execute('update user set imie=%s, nazwisko=%s, pozycja=%s where id=%s;', (imie,nazwisko,pozycja,id))
-#         
-#         self.cursor = self.conn.cursor()
-
-
-# passwd_change wciąż rozpoznaje tylko po hasle bez potwierdzenia maila! 
+        print('Podaj dane do edycji. \nUwaga! Puste pola nadpiszą stare wartości!')    
+        imie = input('Podaj imie: ')
+        nazwisko = input('Podaj nazwisko: ')
+        ksywa = input('Podaj swoją ksywkę: ')
+        plec = input('Podaj płeć: ')
+        data_ur = input('Podaj datę urodzenia: ')
+        waga = input('Podaj wage: ')
+        email = input('Podaj email: ')
+        telefon = input('Podaj nr. telefonu: ')    
+        self.cursor.execute('update klubowicze=%s imie=%s, nazwisko=%s, ksywa=%s, plec=%s, data_ur=%s, waga=%s, email=%s, telefon=%i;' , +
+                            +(imie, nazwisko, ksywa, plec, data_ur, waga, email, telefon))
+        
+# rozwiązac problem z 134 line a potem sprawdzć update z 140-150
+# ----------------------------------------------------------
 
     def passwd_change(self):
         user_passwd = input('Podaj hasło: ')
         self.cursor.execute('SELECT email from logowanie WHERE haslo =\''+user_passwd+'\';') 
-        # DODAĆ w select'ie >>> user_email <<< jak zacznie działać
         results = self.cursor.fetchall()
         for row in results:
             email = row[0]
@@ -150,6 +168,13 @@ class Logowanie:
             else:
                 print('Hasła nie są jednakowe! Wpisz dwa razy to samo hasło. \n')
             break
-        
     
+    
+#     def rezerwacja(self):
+#         imie = input('Podaj imie: ')
+#         nazwisko = input('Podaj nazwisko: ')
+#         pozycja = input('Podaj pozycję: ')
+#         self.cursor.execute('insert into klubowicze (imie,nazwisko,pozycja) values (%s,%s,%s);' , (imie,nazwisko,pozycja))
+
+
 p1 = DBconn()
