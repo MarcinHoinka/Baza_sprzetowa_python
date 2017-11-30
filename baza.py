@@ -57,8 +57,9 @@ class DBconn:
                     l1 = Logowanie(user_email)
                     l1.menu_user()
                 elif uprawnienia == '2':
-                    print('Status: sprzetowiec')
-                    self.menu_root()
+                    print('Status: sprzętowiec')
+                    l2 = Logowanie(user_email)
+                    l2.menu_root()
                 else:
                     print('Brak nadanych uprawnień \n Skontaktuj się ze sprzętowcem!')
             else: 
@@ -70,15 +71,14 @@ class Logowanie:
     def __init__(self,user_email):
         self.user_email = user_email
         self.conn=conn
-        #jak uruchomic odpowiednią metode zaleznie od uprawnień
-    
+        
     def menu_root(self):
         self.cursor = self.conn.cursor()
 #         print('Połączenie ustanowione')
         while(True):
-            c = input('Co chcesz zrobić: n\(S)elect, n\(I)nsert, n\(U)pdate, n\(D)elete, n\(Q)uit \n')
+            c = input('--------------- \nCo chcesz zrobić: \n [S]Pokaż listę użytkowaników \n [I]nsert \n [U]pdate \n [D]usuń użytkownika \n [H]zmień hasło \n [Q]wyjdz \n')
             if(c.upper() == 'S'):
-                self.select()
+                self.select_klubowicze()
             elif(c.upper() == 'I'):
                 self.insert()
                 self.conn.commit()    #z pythona musimy zacommitowaÄ‡ zmiany - potwierdziÄ‡
@@ -89,10 +89,10 @@ class Logowanie:
                 self.conn.commit()
                 self.select()
             elif(c.upper() == 'D'):
-                self.delete() 
+                self.delete_user() 
                 self.conn.commit()
             elif(c.upper() == 'H'):
-                self.passwd_change()
+                self.passwd_change() #dlaczego hasło sie zmienia bez commitów?
             elif(c.upper() == 'Q'):
                 print('Wylogowano')
                 self.conn.close()
@@ -101,7 +101,7 @@ class Logowanie:
     def menu_user(self):
         self.cursor = self.conn.cursor()
         while(True):
-            c = input('Co chcesz zrobić: \n [R]rezerwacja \n [Z]zmień swoje dane \n [H]zmien hasło \n [Q]wyjdz \n')
+            c = input('--------------- \nCo chcesz zrobić: \n [R]rezerwacja \n [Z]zmień swoje dane \n [H]zmien hasło \n [Q]wyjdz \n')
             if(c.upper() == 'R'):
                 self.rezerwacja()
             elif(c.upper() == 'Z'):
@@ -152,6 +152,7 @@ class Logowanie:
 # rozwiązac problem z 134 line a potem sprawdzć update z 140-150
 # ----------------------------------------------------------
 
+#     zmienia hasło usera, wymagane potwierdzenie aktualnym hasłem
     def passwd_change(self):
         user_passwd = input('Podaj hasło: ')
         self.cursor.execute('SELECT email from logowanie WHERE haslo =\''+user_passwd+'\';') 
@@ -176,5 +177,30 @@ class Logowanie:
 #         pozycja = input('Podaj pozycję: ')
 #         self.cursor.execute('insert into klubowicze (imie,nazwisko,pozycja) values (%s,%s,%s);' , (imie,nazwisko,pozycja))
 
+#---------------- FUNKCJONALNOŚĆ DLA menu_root ----------------------
+    
+#     zwraca listę wszystkich userów
+    def select_klubowicze(self):
+        self.cursor.execute('select id_user, imie, nazwisko, email FROM klubowicze;')
+        results = self.cursor.fetchall()
+        print("%3s | %10s | %10s | %26s |" %('Id', 'Imie', 'Nazwisko','email'))
+        for row in results:
+            id_user = row[0]
+            imie = row[1]
+            nazwisko = row[2]
+            email = row[3]
+            print("%3s | %10s | %10s | %26s |" % (id_user, imie, nazwisko, email))
+    
+    
+#     kasuje usera po podaniu id_usera
+    def delete_user(self):
+        id_user = input('Podaj id klubowicza do usunięcia: ')
+        self.cursor.execute('delete from klubowicze where id_user=%s;', (id_user))
+        print('Użytkownik usunięty.') 
+                  
+            
+#        self.cursor.execute('update user set id_user=%s, imie=%s, nazwisko=%s, email=%s where id=%s;', (id_user, imie, nazwisko, email))
+#         print('%-15s| %-20s| %-12s| %-20s' %('ID','Imie', 'Nazwisko','email')) 
+#         print ('%-15s| %-20s| %-12s| %-20s' % (id_user, imie, nazwisko, email))
 
 p1 = DBconn()
