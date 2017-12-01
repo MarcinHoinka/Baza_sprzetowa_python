@@ -29,13 +29,14 @@ class DBconn:
             choice = input('Co chcesz zrobić? [Z]zaloguj [Q]wyjdz ')
             if (choice.upper() == 'Z'):
                 self.log_in()
+#                 break
             elif (choice.upper() == 'Q'):
                 print('Wylogowano.')
                 self.conn.close()
                 break
             
     def log_in(self):
-        user_email = input('Podaj email: ')
+        self.user_email = input('Podaj email: ')
         user_passwd = input('Podaj hasło: ')
         self.cursor.execute("SELECT k.imie, k.nazwisko, k.uprawnienia, k.email as email FROM klubowicze as k JOIN logowanie as l where l.haslo COLLATE utf8_bin ='"
                              +user_passwd+"' and (k.email = l.email);")       
@@ -47,18 +48,18 @@ class DBconn:
             uprawnienia = row[2]
             email = row[3]
 #             print ('%-15s| %-20s| %-12s| %-20s' % (imie, nazwisko, uprawnienia, email))
-            if (email == user_email):
+            if (email == self.user_email):
                 print('-----------------------------------\nWitaj '+imie+'!')
                 print('%-15s| %-20s| %-12s| %-20s' %('Imie', 'Nazwisko','uprawnienia','email')) 
                 print ('%-15s| %-20s| %-12s| %-20s' % (imie, nazwisko, uprawnienia, email))
 #                 print(uprawnienia) - podglad uprawnien w zmiennej - DO SKASOWANIA NA KONIEC
                 if uprawnienia == '1':
                     print('Status: klubowicz')
-                    l1 = Logowanie(user_email)
+                    l1 = Logowanie(self.user_email)
                     l1.menu_user()
                 elif uprawnienia == '2':
                     print('Status: sprzętowiec')
-                    l2 = Logowanie(user_email)
+                    l2 = Logowanie(self.user_email)
                     l2.menu_root()
                 else:
                     print('Brak nadanych uprawnień \n Skontaktuj się ze sprzętowcem!')
@@ -75,14 +76,18 @@ class Logowanie:
     def menu_root(self):
         self.cursor = self.conn.cursor()
 #         print('Połączenie ustanowione')
+        #self.user_email = user_email
         while(True):
-            c = input('--------------- \nCo chcesz zrobić: \n [S]Pokaż listę użytkowaników \n [I]nsert \n [U]pdate \n [D]usuń użytkownika \n [H]zmień hasło \n [Q]wyjdz \n')
+            c = input('--------------- \nCo chcesz zrobić: \n [S]Pokaż listę użytkowaników \n [I]insert \n [R]rezerwacje\n [U]update \n [D]usuń użytkownika \n [H]zmień hasło \n [Q]Wyloguj \n')
             if(c.upper() == 'S'):
                 self.select_klubowicze()
             elif(c.upper() == 'I'):
                 self.insert()
-                self.conn.commit()    #z pythona musimy zacommitowaÄ‡ zmiany - potwierdziÄ‡
+                self.conn.commit()    #z pythona musimy zacommitować zmiany - potwierdził
                 self.select()
+            elif(c.upper() == 'R'):
+                r1 = Rezerwacje(self.user_email)
+                r1.rez_menu()
             elif(c.upper() == 'U'):
                 self.select()
                 self.update()
@@ -95,13 +100,14 @@ class Logowanie:
                 self.passwd_change() #dlaczego hasło sie zmienia bez commitów?
             elif(c.upper() == 'Q'):
                 print('Wylogowano')
-                self.conn.close()
-                break  
+                #self.conn.close()
+                # self.conn.close tylko na początku!
+                break
         
     def menu_user(self):
         self.cursor = self.conn.cursor()
         while(True):
-            c = input('--------------- \nCo chcesz zrobić: \n [R]rezerwacja \n [Z]zmień swoje dane \n [H]zmien hasło \n [Q]wyjdz \n')
+            c = input('--------------- \nCo chcesz zrobić: \n [R]rezerwacja \n [Z]zmień swoje dane \n [H]zmien hasło \n [Q]Wyloguj \n')
             if(c.upper() == 'R'):
                 self.rezerwacja()
             elif(c.upper() == 'Z'):
@@ -110,8 +116,11 @@ class Logowanie:
                 self.passwd_change()
             elif(c.upper() == 'Q'):
                 print('Wylogowano')
-                self.conn.close()
+                #self.conn.close()
                 break
+    
+
+#     -------------------- FUNKCJONALNOŚĆ DLA menu_user -------------------------------
     
     def user_update(self):
         print(self.user_email)
@@ -125,19 +134,13 @@ class Logowanie:
             ksywa = row[2]
             plec = row[3]
             data_ur = row[4]
-            waga = [5]
+            waga = row[5]
             email = row[6]
             telefon = row[7]
-            print ('%-15s| %-20s| %-10s| %-5s| %-14s| %-5i| %-20s| %-10s|' % ('imie, nazwisko, ksywa, płeć, Data urodzenia, waga, email, telefon'))
-            print ('%-15s| %-20s| %-10s| %-5s| %-12s| %-3i| %-20s| %-10s|' % (imie, nazwisko, ksywa, plec, data_ur, waga, email, telefon))
+            print ('%-15s| %-20s| %-10s| %-5s| %-14s| %-5s| %-20s| %-10s|' % ('imie', 'nazwisko', 'ksywa', 'płeć', 'Data urodzenia', 'waga', 'email', 'telefon'))
+            print ('%-15s| %-20s| %-10s| %-5s| %-14s| %-5i| %-20s| %-10s|' % (imie, nazwisko, ksywa, plec, data_ur, waga, email, telefon))
         
-#         ERROR!!!!!!
-#         File "C:\Users\Marcin\Documents\03_Kurs Reaktor PWN\Python\Py_database\baza.py", line 134, in user_update
-#     print ('%-15s| %-20s| %-10s| %-5s| %-14s| %-5i| %-20s| %-10s|' % ('imie, nazwisko, ksywa, płeć, Data_urodzenia, waga, email, telefon'))
-# TypeError: not enough arguments for format string
-        
-        
-        print('Podaj dane do edycji. \nUwaga! Puste pola nadpiszą stare wartości!')    
+        print('-------------\nPodaj dane do edycji. \nUwaga! Puste pola nadpiszą stare wartości!')    
         imie = input('Podaj imie: ')
         nazwisko = input('Podaj nazwisko: ')
         ksywa = input('Podaj swoją ksywkę: ')
@@ -149,7 +152,7 @@ class Logowanie:
         self.cursor.execute('update klubowicze=%s imie=%s, nazwisko=%s, ksywa=%s, plec=%s, data_ur=%s, waga=%s, email=%s, telefon=%i;' , +
                             +(imie, nazwisko, ksywa, plec, data_ur, waga, email, telefon))
         
-# rozwiązac problem z 134 line a potem sprawdzć update z 140-150
+#   update z 140-150 - nie działa
 # ----------------------------------------------------------
 
 #     zmienia hasło usera, wymagane potwierdzenie aktualnym hasłem
@@ -202,5 +205,42 @@ class Logowanie:
 #        self.cursor.execute('update user set id_user=%s, imie=%s, nazwisko=%s, email=%s where id=%s;', (id_user, imie, nazwisko, email))
 #         print('%-15s| %-20s| %-12s| %-20s' %('ID','Imie', 'Nazwisko','email')) 
 #         print ('%-15s| %-20s| %-12s| %-20s' % (id_user, imie, nazwisko, email))
+
+
+
+#     -------------------- FUNKCJONALNOŚĆ DLA wspólna -------------------------------
+
+
+class Rezerwacje:
+    def __init__(self,user_email):
+        self.user_email = user_email
+        self.conn=conn
+         
+    def rez_menu(self):   
+        while(True):
+            c = input('--------------- \nCo chcesz zrobić: \n [S]Pokaż listę rezerwacji \n [I]nsert \n [U]pdate \n [D]usuń użytkownika \n [H]zmień hasło \n [Q]cofnij \n')
+            if(c.upper() == 'S'):
+                self.select_klubowicze()
+            elif(c.upper() == 'I'):
+                self.insert()
+                self.conn.commit()    #z pythona musimy zacommitowaÄ‡ zmiany - potwierdziÄ‡
+                self.select()
+            elif(c.upper() == 'R'):
+                self.rezerwacja()
+            elif(c.upper() == 'U'):
+                self.select()
+                self.update()
+                self.conn.commit()
+                self.select()
+            elif(c.upper() == 'D'):
+                self.delete_user() 
+                self.conn.commit()
+            elif(c.upper() == 'H'):
+                self.passwd_change() #dlaczego hasło sie zmienia bez commitów?
+            elif(c.upper() == 'Q'):
+                print('Wylogowano')
+                #self.conn.close()
+                break
+        
 
 p1 = DBconn()
