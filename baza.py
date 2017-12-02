@@ -2,28 +2,30 @@
 import pymysql
 # import getpass
 from Conn_Package.connection import conn
+from aifc import data
 
 class DBconn:
     def __init__(self):
 #         self.user_email=''
         self.conn=conn
         self.cursor = self.conn.cursor()
-        print(        '_________ \n'+                    
-        '\______  \_____  _____________ \n'+                            
-        '|    |  _/\__  \ \___   /\__  \ \n'+                       
-        '|    |   \ / __ \_/    /  / __ \_ \n'+                     
-        '|______  /(____  /_____ \(____  / \n'+                    
-        '       \/      \/      \/     \/ \n'+  
-        ' _________                           __ \n'+                        
-        '/   _____/___________________ ______/  |_  ______  _  _______ \n'+   
-        '\_____  \\____   \__  \___   // __  \   __\/  _ \ \/ \/ /\__  \  \n'+
-        ' /        \  |_> >  |\/ /   /\  ___/|  | (  <_> )     /  / __ \_ \n'+
-        '/_______  /   __/|__|  /_____ \\___  >__|  \____/ \/\_/  (____  / \n'+
-        '        \/|__|               \/   \/                         \/ \n'+      
-        
-        
-        
-        'Połączenie ustanowione.\n')
+        print('''
+    __________                                                       
+    \______   \_____  _____________                                  
+     |    |  _/\__  \ \___   /\__  \                                 
+     |    |   \ / __ \_/    /  / __ \_                               
+     |______  /(____  /_____ \(____  /                               
+            \/      \/      \/     \/                                
+      _________                           __                         
+     /   _____/____________________ _____/  |_  ______  _  _______   
+     \_____  \\____ \_  __ \___   // __ \    __\/  _ \ \/ \/ /\__  \  
+     /        \  |_> >  | \//    /\  ___/|  | (  <_> )     /  / __ \_
+    /_______  /   __/|__|  /_____ \\____  >__|  \____/ \/\_/  (____  /
+            \/|__|               \/     \/                        \/ 
+
+    Połączenie ustanowione.\n''')
+    
+#         print(""" print bloku """) 
         
         while(True):
             choice = input('Co chcesz zrobić? [Z]zaloguj [Q]wyjdz ')
@@ -78,7 +80,7 @@ class Logowanie:
 #         print('Połączenie ustanowione')
         #self.user_email = user_email
         while(True):
-            c = input('--------------- \nCo chcesz zrobić: \n [S]Pokaż listę użytkowaników \n [I]insert \n [R]rezerwacje\n [U]update \n [D]usuń użytkownika \n [H]zmień hasło \n [Q]Wyloguj \n')
+            c = input('--------------- \nCo chcesz zrobić: \n [S]Pokaż listę użytkowników \n [I]insert \n [R]rezerwacje\n [U]update \n [D]usuń użytkownika \n [H]zmień hasło \n [Q]Wyloguj \n')
             if(c.upper() == 'S'):
                 self.select_klubowicze()
             elif(c.upper() == 'I'):
@@ -109,7 +111,8 @@ class Logowanie:
         while(True):
             c = input('--------------- \nCo chcesz zrobić: \n [R]rezerwacja \n [Z]zmień swoje dane \n [H]zmien hasło \n [Q]Wyloguj \n')
             if(c.upper() == 'R'):
-                self.rezerwacja()
+                r1 = Rezerwacje(self.user_email)
+                r1.rez_menu()
             elif(c.upper() == 'Z'):
                 self.user_update()
             elif(c.upper() == 'H'):
@@ -120,39 +123,108 @@ class Logowanie:
                 break
     
 
-#     -------------------- FUNKCJONALNOŚĆ DLA menu_user -------------------------------
+#     -------------------- Funkcjonalność (METODY) do menu_root i menu_user -------------------------------
     
     def user_update(self):
-        print(self.user_email)
-        self.cursor.execute('SELECT imie, nazwisko, ksywka, plec, data_ur, waga, email, telefon FROM klubowicze WHERE email =\''+
-                            self.user_email+'\';')
+        self.cursor.execute('SELECT * FROM klubowicze WHERE email =\''+self.user_email+'\';')
         results = self.cursor.fetchall()
 #         print(results)
         for row in results:
-            imie = row[0]
-            nazwisko = row[1]
-            ksywa = row[2]
-            plec = row[3]
-            data_ur = row[4]
-            waga = row[5]
-            email = row[6]
-            telefon = row[7]
-            print ('%-15s| %-20s| %-10s| %-5s| %-14s| %-5s| %-20s| %-10s|' % ('imie', 'nazwisko', 'ksywa', 'płeć', 'Data urodzenia', 'waga', 'email', 'telefon'))
-            print ('%-15s| %-20s| %-10s| %-5s| %-14s| %-5i| %-20s| %-10s|' % (imie, nazwisko, ksywa, plec, data_ur, waga, email, telefon))
+            id_user = str(row[0])
+            imie = row[1]
+            nazwisko = row[2]
+            ksywa = row[3]
+            plec = row[4]
+            data_ur = row[5]
+            waga = row[6]
+            email = row[7]
+            telefon = row[8]
+#             testowe printy sprawdzające działanie - do usuniecia
+#             print ('%8s| %-15s| %-20s| %-10s| %-5s| %-14s| %-5s| %-20s| %-10s|' % ('User ID','imie', 'nazwisko', 'ksywa', 'płeć', 'Data urodzenia', 'waga', 'email', 'telefon'))
+#             print ('%8i| %-15s| %-20s| %-10s| %-5s| %-14s| %-5s| %-20s| %-10s|' % (id_user, imie, nazwisko, ksywa, plec, data_ur, waga, email, telefon))
         
-        print('-------------\nPodaj dane do edycji. \nUwaga! Puste pola nadpiszą stare wartości!')    
-        imie = input('Podaj imie: ')
-        nazwisko = input('Podaj nazwisko: ')
-        ksywa = input('Podaj swoją ksywkę: ')
-        plec = input('Podaj płeć: ')
-        data_ur = input('Podaj datę urodzenia: ')
-        waga = input('Podaj wage: ')
-        email = input('Podaj email: ')
-        telefon = input('Podaj nr. telefonu: ')    
-        self.cursor.execute('update klubowicze=%s imie=%s, nazwisko=%s, ksywa=%s, plec=%s, data_ur=%s, waga=%s, email=%s, telefon=%i;' , +
-                            +(imie, nazwisko, ksywa, plec, data_ur, waga, email, telefon))
+#         print('-------------\nPodaj dane do edycji. \nUwaga! Puste pola nadpiszą stare wartości!')
+        print('---------------\nEDYCJA DANYCH')
+        while(True):
+#             print('Zmiania imienia ([D]-przejdz dalej): ')
+            c = input('Zmiana imienia.\n[Z] zmień\n[D] przejdz dalej ')
+            if (c.upper() == 'D'):
+                print('Dalej')
+                break
+            else:
+                imie = input('Podaj imie: ')
+                self.cursor.execute('UPDATE klubowicze SET imie = \''+imie+'\' WHERE id_user = '+id_user+';')
+                self.conn.commit()
+                break
         
-#   update z 140-150 - nie działa
+        while(True):
+            c = input('Zmiana nazwiska.\n[Z] zmień\n[D] przejdz dalej ')
+            if (c.upper() == 'D'):
+                print('Dalej')
+                break
+            else:
+                nazwisko = input('Podaj nazwisko: ')
+                self.cursor.execute('UPDATE klubowicze SET nazwisko = \''+nazwisko+'\' WHERE id_user = '+id_user+';')
+                self.conn.commit()
+                break
+            
+        while(True):
+            c = input('Zmiana ksywki.\n[Z] zmień\n[D] przejdz dalej ')
+            if (c.upper() == 'D'):
+                print('Dalej')
+                break
+            else:
+                ksywa = input('Podaj swoją ksywkę: ')
+                self.cursor.execute('UPDATE klubowicze SET nazwisko = \''+ksywa+'\' WHERE id_user = '+id_user+';')
+                self.conn.commit()
+                break       
+            
+        while(True):
+            c = input('Zmiana płci ;) \n[Z] zmień\n[D] przejdz dalej ')
+            if (c.upper() == 'D'):
+                print('Dalej')
+                break
+            else:
+                ksywa = input('Podaj płeć: ')
+                self.cursor.execute('UPDATE klubowicze SET nazwisko = \''+plec+'\' WHERE id_user = '+id_user+';')
+                self.conn.commit()
+                break
+            
+        while(True):
+            c = input('Zmiana ksywki.\n[Z] zmień\n[D] przejdz dalej ')
+            if (c.upper() == 'D'):
+                print('Dalej')
+                break
+            else:
+                ksywa = input('Podaj swoją datę urodzenia w formacie \'YYYY-MM-RR\':')
+                self.cursor.execute('UPDATE klubowicze SET nazwisko = \''+data_ur+'\' WHERE id_user = '+id_user+';')
+                self.conn.commit()
+                break
+            
+        while(True):
+            c = input('Zmiana wagi\n[Z] zmień\n[D] przejdz dalej ')
+            if (c.upper() == 'D'):
+                print('Dalej')
+                break
+            else:
+                ksywa = input('Podaj wagę: ')
+                self.cursor.execute('UPDATE klubowicze SET nazwisko = \''+waga+'\' WHERE id_user = '+id_user+';')
+                self.conn.commit()
+                break
+            
+        while(True):
+            c = input('Zmiana numeru telefonu \n[Z] zmień\n[D] przejdz dalej ')
+            if (c.upper() == 'D'):
+                print('Dalej')
+                break
+            else:
+                ksywa = input('Podaj nr. telefonu (bez spacji): ')
+                self.cursor.execute('UPDATE klubowicze SET nazwisko = \''+telefon+'\' WHERE id_user = '+id_user+';')
+                self.conn.commit()
+                break
+            
+#         email = input('Podaj email: ')     email w oddzielnym menu!!!!
+      
 # ----------------------------------------------------------
 
 #     zmienia hasło usera, wymagane potwierdzenie aktualnym hasłem
@@ -210,20 +282,23 @@ class Logowanie:
 
 #     -------------------- FUNKCJONALNOŚĆ DLA wspólna -------------------------------
 
+# klasa do submenu obsługi rezerwacji
 
 class Rezerwacje:
     def __init__(self,user_email):
         self.user_email = user_email
         self.conn=conn
+
          
-    def rez_menu(self):   
+    def rez_menu(self): 
+        self.cursor = self.conn.cursor()  
         while(True):
             c = input('--------------- \nCo chcesz zrobić: \n [S]Pokaż listę rezerwacji \n [I]nsert \n [U]pdate \n [D]usuń użytkownika \n [H]zmień hasło \n [Q]cofnij \n')
             if(c.upper() == 'S'):
-                self.select_klubowicze()
+                self.rez_list()
             elif(c.upper() == 'I'):
                 self.insert()
-                self.conn.commit()    #z pythona musimy zacommitowaÄ‡ zmiany - potwierdziÄ‡
+                self.conn.commit()    #z pythona musimy zacommitować zmiany - potwierdziÄ‡
                 self.select()
             elif(c.upper() == 'R'):
                 self.rezerwacja()
@@ -242,5 +317,27 @@ class Rezerwacje:
                 #self.conn.close()
                 break
         
+    def rez_list(self):
+        print(self.user_email)
+#         self.cursor.execute('SELECT imie, nazwisko, ksywka, plec, data_ur, waga, email, telefon FROM klubowicze WHERE email =\''+
+#                             self.user_email+'\';')
+        self.cursor.execute('SELECT * FROM baza_sprzetowa.historia_rez2;')
+        results = self.cursor.fetchall()
+        print ('%-15s| %-15s| %-10s| %-20s| %-10s| %-10s| %-13s| %-9s| %-12s| %-10s|' % ('Rezerwacja od', 'Rezerwacja od','imie', 'nazwisko','ID kajaka','ID wiosla','ID kamizelki','ID kasku','ID fartucha','ID rzutki'))
+        for row in results:
+            data_rez_start = row[0]
+            data_rez_end = row[1]
+            imie = row[2]
+            nazwisko = row[3]
+            id_kajaka = row[4]
+            id_wiosla = row[5]
+            id_kamizelki = row[6]
+            id_kasku= row[7]
+            id_fartucha = row[8]
+            id_rzutki = row[9]
+            print('%-15s| %-15s| %-10s| %-20s| %-10s| %-10s| %-13s| %-9s| %-12s| %-10s|' % (data_rez_start, data_rez_end, imie, nazwisko, id_kajaka, id_wiosla, id_kamizelki, id_kasku, id_fartucha, id_rzutki))
+        
+#         'data_rez_start', 'data_rez_end','imie;nazwisko','id_kajaka','id_wiosla','id_kamizelki','id_kasku','id_fartucha','id_rzutki
+                
 
 p1 = DBconn()
