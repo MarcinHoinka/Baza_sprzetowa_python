@@ -1,15 +1,13 @@
 #-*- coding: utf-8 -*-
 import pymysql
-# import getpass
+import user_data
 from Conn_Package.connection import conn
-
 
 
 
 class DBconn:
     def __init__(self):       
         self.conn=conn
-#         self.conn.set_character_set('utf8') ????????????????????
         self.cursor = self.conn.cursor()
         print('''
     __________                                                       
@@ -26,7 +24,6 @@ class DBconn:
             \/|__|               \/     \/                        \/ 
     ''')
     
-#         print(""" print bloku """) 
         
         while(True):
             choice = input('\nLOGOWANIE\n [Z]zaloguj\n [Q]wyjdz\n ')
@@ -86,36 +83,28 @@ class Logowanie:
     def menu_root(self):
 
         while(True):
-            c = input('--------[MENU]-------- \n\n--SPRZĘT--\n[R]rezerwacje i sprzęt \n\n--ADMINISTRACJA-- \n[S]pokaż listę użytkowników \n[D]usuń użytkownika \n\n--UŻYTKOWNIK--\n[P]wyświetl swoje dane \n[Z]zmień swoje dane \n[E]zmień email \n[H]zmień hasło \n[Q]wyloguj \n')
+            c = input('--------[MENU]-------- \n\n--SPRZĘT--\n[R]rezerwacje i sprzęt \n\n--ADMINISTRACJA-- \n[S]pokaż listę użytkowników \n[I]dodaj użytkownika \n[D]usuń użytkownika \n\n--UŻYTKOWNIK--\n[P]wyświetl swoje dane \n[Z]zmień swoje dane \n[E]zmień email \n[H]zmień hasło \n[Q]wyloguj \n')
             if(c.upper() == 'S'):
                 self.select_klubowicze()
             elif(c.upper() == 'P'):
                 self.user_dane()    
             elif(c.upper() == 'Z'):
                 self.user_update()
-#             elif(c.upper() == 'I'):
-#                 self.insert()
-#                 self.conn.commit()
-#                 self.select()
+            elif(c.upper() == 'I'):
+                add_user=user_data.UserData(self.user_email,self.id_user_login,self.conn,self.cursor)
+                add_user.user_add()
             elif(c.upper() == 'R'):
                 r1 = Rezerwacje(self.user_email,self.id_user_login,self.conn,self.cursor)
                 r1.rez_menu()
-#             elif(c.upper() == 'U'):
-#                 self.select()
-#                 self.update()
-#                 self.conn.commit()
-#                 self.select()
             elif(c.upper() == 'D'):
                 self.delete_user() 
                 self.conn.commit()
             if(c.upper() == 'E'):
                 self.user__email_update() 
             elif(c.upper() == 'H'):
-                self.passwd_change() #dlaczego hasło sie zmienia bez commitów?
+                self.passwd_change()
             elif(c.upper() == 'Q'):
                 print('Wylogowano')
-                #self.conn.close()
-                # self.conn.close tylko na początku!
                 break
 
 # MENU dla uprawnień KLUBOWICZ (user)  
@@ -280,7 +269,6 @@ class Logowanie:
                 print('Zła komenda!')
                 break
         
-# DODAĆ - dodawnie userów na zasadzie jak edycja(JAK REZERWACJE!) Menu kaskadowe zbierajace wartosci do zmiennych które sie zaimportuje do polecania INSERT INTO           
             
 #  ZMIANA adresu email
     def user__email_update(self):
@@ -337,9 +325,12 @@ class Logowanie:
     
 # USUWANIE usera po podaniu jego ID (z listy klubowiczów) - kasuje też logowanie
     def delete_user(self):
-        id_user = input('Podaj id klubowicza do usunięcia: ')
+        email = input('Podaj email klubowicza do usunięcia: ')
 #         print('delete from klubowicze where id_user=%s', (id_user))
-        self.cursor.execute('delete from klubowicze where id_user=%s', (id_user))
+        self.cursor.execute('DELETE FROM klubowicze WHERE email=%s', (email))
+        self.cursor.execute('DELETE FROM logowanie WHERE email=%s', (email))
+        self.conn.commit()  
+        
         print('Użytkownik usunięty.') 
 
 
@@ -475,7 +466,7 @@ class Rezerwacje:
 
 
 # rezerwacja - insert w tabeli rezerwacji dopisywany kaskadowo
-# najpierw wprowadzamy date rezerwacji, nastepnie zamawamy kolejne elementy z dostępnych w tym okresie 
+# najpierw wprowadzamy date rezerwacji, nastepnie zamawiamy kolejne elementy z dostępnych w tym okresie 
 
     def rezerwacja(self):
         data_rez_start = input('Podaj datę początkową rezerwacji (RRRR-MM-DD): ')
@@ -498,7 +489,7 @@ class Rezerwacje:
         while(True):
             c = input('\nRezerwacja kajaka.\n[R] rezerwuj\n[D] przejdz dalej ')
             if (c.upper() == 'D'):
-                id_kajaka = 'null'
+                id_kajaka = None
                 print('Dalej')
                 break
             elif (c.upper() == 'R'):
@@ -523,7 +514,7 @@ class Rezerwacje:
         while(True):
             c = input('\nRezerwacja wiosła.\n[R] rezerwuj\n[D] przejdz dalej ')
             if (c.upper() == 'D'):
-                id_wiosla = 'null'
+                id_wiosla = None
                 print('Dalej')
                 break
             elif (c.upper() == 'R'):
@@ -547,7 +538,7 @@ class Rezerwacje:
         while(True):
             c = input('\nRezerwacja kamizelki.\n[R] rezerwuj\n[D] przejdz dalej ')
             if (c.upper() == 'D'):
-                id_kamizelki = 'null'
+                id_kamizelki = None
                 print('Dalej')
                 break
             elif (c.upper() == 'R'):
@@ -571,7 +562,7 @@ class Rezerwacje:
         while(True):
             c = input('\nRezerwacja kasku.\n[R] rezerwuj\n[D] przejdz dalej ')
             if (c.upper() == 'D'):
-                id_kasku = 'null'
+                id_kasku = None
                 print('Dalej')
                 break
             elif (c.upper() == 'R'):
@@ -595,7 +586,7 @@ class Rezerwacje:
         while(True):
             c = input('\nRezerwacja fartucha.\n[R] rezerwuj\n[D] przejdz dalej ')
             if (c.upper() == 'D'):
-                id_fartucha = 'null'
+                id_fartucha = None
                 print('Dalej')
                 break
             elif (c.upper() == 'R'):
@@ -604,6 +595,7 @@ class Rezerwacje:
                 break 
             else:
                 print('Zła komenda!')
+                
 
 # sprawdzenie dostepności rzutki w danym terminie
         print("--Dostępność rzutek--")
@@ -619,7 +611,7 @@ class Rezerwacje:
         while(True):
             c = input('\nRezerwacja rzutki.\n[R] rezerwuj\n[D] przejdz dalej ')
             if (c.upper() == 'D'):
-                id_rzutki = 'null'
+                id_rzutki = None
                 print('Dalej')
                 break
             elif (c.upper() == 'R'):
@@ -629,15 +621,13 @@ class Rezerwacje:
             else:
                 print('Zła komenda!')
          
+        print(id_rzutki)
+         
         id_user_login = str(self.id_user_login)
-        print('insert into rezerwacje values (null,\''+data_rez_start+'\', \''+data_rez_end+'\', \''+id_user_login+'\', \''+id_kajaka+'\', \''+id_wiosla+'\',\''+id_kamizelki+'\',\''+id_kasku+'\',\''+id_fartucha+'\',\''+id_rzutki+'\');')
-        self.cursor.execute('insert into rezerwacje values (null,\''+data_rez_start+'\', \''+data_rez_end+'\', \''+id_user_login+'\', \''+id_kajaka+'\', \''+id_wiosla+'\',\''+id_kamizelki+'\',\''+id_kasku+'\',\''+id_fartucha+'\',\''+id_rzutki+'\');')
+        self.cursor.execute('insert into rezerwacje (data_rez_start, data_rez_end,id_user ,id_kajaka, id_wiosla, id_kamizelki, id_kasku, id_fartucha, id_rzutki) values (%s,%s,%s,%s,%s,%s,%s,%s,%s);', (data_rez_start, data_rez_end,id_user_login ,id_kajaka, id_wiosla, id_kamizelki, id_kasku, id_fartucha, id_rzutki))
         self.conn.commit()
+        print("Rezerwacja założona")
         
-                
-#         print('insert into rezerwacje values (id_rezerwacje ,data_rez_start=%s, data_rez_end=%s, id_kajaka=%s, id_wiosla=%s, id_kamizelki=%s, id_kasku=%s, id_fartucha=%s, id_rzutki=%s ;', ('null', data_rez_start, data_rez_end, id_kajaka, id_wiosla, id_kamizelki, id_kasku, id_fartucha, id_rzutki))
-#         print('(insert into rezerwacje values (null, '2017-10-16' ,'2017-10-23', 13 ,'KG-007', 'WG-006', 'KaG-005', null, null , null)');
-#         print('(insert into rezerwacje values (null, \''+data_rez_start+'\', \''+data_rez_end+'\', \''+id_kajaka+'\', \''+id_wiosla+'\',\''+id_kamizelki+'\',\''+id_kasku+'\',\''+id_fartucha+'\',\''+id_rzutki+'\');')
 
 
 p1=DBconn()
